@@ -80,6 +80,24 @@ behavior.
 CWE-78 is not required. The receiving executable can parse the embedded delimiter
 itself; no command shell or interpreter is necessary.
 
+Conservative fallback if CWE-88's Description is intentionally kept string-focused:
+If the CWE Team prefers not to broaden the current Description, retain it and add
+an Extended Description and/or Mapping Notes clarification along these lines:
+
+When mapping argument-injection vulnerabilities, creation of a new OS-level
+command-line argument is not necessarily required. A receiving command may parse
+a structured option grammar within a single argument, such as a comma-separated
+list of key/value options. If externally controlled data injects a delimiter that
+causes the receiving command to process an unintended logical option or switch,
+CWE-88 can be appropriate even when the caller uses an argument-array API, the
+OS-level argument count remains unchanged, and no shell performs the relevant
+tokenization. CWE-141 remains the broader generic delimiter weakness; CWE-235
+may additionally apply when an injected option duplicates an existing name and
+duplicate handling is itself incorrect.
+
+Expanded fallback text and a mapping decision guide:
+https://github.com/windshock/cwe-88-embedded-suboption-injection/blob/main/submission/MAPPING-NOTES-PROPOSAL.md
+
 Published CWE-88 mapping precedent:
 - CVE-2026-40113: a single gcloud --set-env-vars argument contains
   comma-separated KEY=VALUE pairs. The published advisory states that the value
