@@ -1,4 +1,4 @@
-NAME: Modify CWE-88 to Clarify Embedded Option Delimiter Injection within a Single OS-Level Argument
+NAME: Modify CWE-88 to Clarify Embedded Sub-option Argument Injection within a Single OS-Level Argument
 
 DESCRIPTION:
 
