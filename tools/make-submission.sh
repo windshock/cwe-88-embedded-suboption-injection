@@ -17,14 +17,17 @@ command -v sha256sum >/dev/null 2>&1 || {
     exit 2
 }
 
+# Fail early if product-specific material, compiled artifacts, required files,
+# or the committed integrity manifest are not in the expected state.
+bash "$ROOT/tools/validate-submission.sh"
+
 rm -rf "$DIST"
 mkdir -p "$STAGE"
 
-# Verify the generalized PoC before packaging it.
+# Verify the generalized weakness behavior before packaging it.
 (
     cd "$SUBMISSION"
     bash scripts/run_demo.sh
-    sha256sum -c evidence/sha256.txt
 )
 
 # Copy only the canonical submission material. Do not ship locally compiled
