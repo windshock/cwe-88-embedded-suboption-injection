@@ -53,6 +53,7 @@ def main() -> int:
         print(f"[caller] command[{index}]=<{element}>")
     print("[caller] shell=False")
     print("[caller] --- target output ---")
+    sys.stdout.flush()
 
     completed = subprocess.run(command, shell=False, check=False)
     return completed.returncode
