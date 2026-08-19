@@ -33,8 +33,8 @@ tokenization, and the receiving process's OS-level argument count does not incre
 
 The product constructs or supplies arguments, options, or switches for a command to be
 executed by a separate component in another control sphere, but it does not properly
-preserve or neutralize delimiters that determine the logical argument or option boundaries
-interpreted by the receiving command.
+neutralize delimiters that determine how the receiving command separates or interprets
+those arguments, options, or switches.
 
 ### Extended Description — proposed addition
 
