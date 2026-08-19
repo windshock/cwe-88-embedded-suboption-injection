@@ -6,7 +6,7 @@ Argument Delimiters in a Command ('Argument Injection')**.
 
 The proposal focuses on a recurring argument-injection shape that is easy to miss when a
 process is launched with a structured argument array and no shell: **one OS-level argument
-can itself contain a delimiter-separated sub-option language, and untrusted data embedded
+can itself contain a delimiter-separated option language, and untrusted data embedded
 inside one field can inject additional logical options that are parsed by the receiving
 program.**
 
@@ -18,7 +18,7 @@ program.**
 
 > **CWE-88 should explicitly cover cases in which externally controlled data is embedded
 > within a single command-line argument whose value is parsed by the receiving component
-> as a delimiter-separated sub-option language, allowing attacker-controlled delimiters to
+> as a delimiter-separated option grammar, allowing attacker-controlled delimiters to
 > create additional logical options even when no new OS-level `argv` element is created.**
 
 ## Why this clarification matters
@@ -35,7 +35,7 @@ argv[1] = "-o"
 argv[2] = "endpoint=trusted.example,id=<UNTRUSTED>"
 ```
 
-If `-o` is a comma-delimited sub-option list, an input such as:
+If `-o` is a comma-delimited option list, an input such as:
 
 ```text
 42,endpoint=attacker.example
@@ -54,8 +54,8 @@ occurred in a **second-stage parser inside the receiving command**.
 
 ## Generalized demonstrator
 
-The repository now contains a small, self-contained demonstration written specifically for
-this CWE proposal:
+The repository contains a small, self-contained demonstration written specifically for this
+CWE proposal:
 
 - [`submission/poc/caller.py`](submission/poc/caller.py) invokes a target with a Python
   argument list and `shell=False`;
@@ -81,7 +81,8 @@ The three cases intentionally prove different points:
 The key invariant is **`argc=3` in all cases**. The outer OS argument vector is unchanged,
 but the target's logical option set changes after it reparses the contents of `argv[2]`.
 
-See [`submission/EXPECTED-RESULTS.md`](submission/EXPECTED-RESULTS.md) for exact assertions.
+See [`submission/EXPECTED-RESULTS.md`](submission/EXPECTED-RESULTS.md) and the captured
+[`submission/evidence/`](submission/evidence/) for exact assertions and a reference run.
 
 The demonstrator has no network side effects, does not launch a shell, uses no vendor code,
 and treats `trusted.example` / `attacker.example` only as inert documentation strings.
@@ -110,21 +111,28 @@ CWE-boundary analysis.
 
 ## Proposed CWE-88 changes
 
-The submission proposes targeted clarification rather than a new CWE:
+The submission proposes a modification rather than a new CWE:
 
-1. **Extended Description** — explicitly state that an argument delimiter can belong to an
+1. **Description** — consider removing the string-only implementation assumption so CWE-88
+   can describe arguments/options interpreted by a receiving command even when the caller
+   preserves OS-level argument boundaries.
+2. **Extended Description** — explicitly state that an argument delimiter can belong to an
    embedded grammar inside one OS-level argument, so argument injection does not require
    creating an additional `argv` element.
-2. **Potential Mitigations** — clarify that argument-array APIs alone do not protect values
-   that are subsequently parsed as delimiter-separated option lists; the receiving
-   command's documented argument grammar must also be respected.
-3. **Demonstrative Example** — add a product-independent example in which an untrusted field
-   injects a sibling sub-option into a single `-o` argument.
-4. **Boundary notes** — distinguish the command-specific CWE-88 case from the broader
-   delimiter weakness in **CWE-141** and from duplicate-parameter handling in **CWE-235**.
+3. **Potential Mitigations** — clarify that argument-array APIs remain highly effective for
+   outer argument boundaries but do not protect fields that are subsequently parsed as a
+   delimiter-separated option language by the receiver.
+4. **Demonstrative Example** — add a product-independent example in which an untrusted field
+   injects a sibling logical option into a single `-o` argument.
+5. **Mapping / boundary guidance** — distinguish the command-specific CWE-88 case from the
+   broader delimiter weakness in **CWE-141** and from duplicate-parameter handling in
+   **CWE-235**.
 
-Field-by-field proposed wording is in
-[`submission/modification-details.md`](submission/modification-details.md).
+The concise submission-form draft is in [`submission/FORM-TEXT.md`](submission/FORM-TEXT.md).
+The longer field-by-field rationale is in
+[`submission/modification-details.md`](submission/modification-details.md), and the most
+likely reviewer objections are stress-tested in
+[`submission/REVIEWER-NOTES.md`](submission/REVIEWER-NOTES.md).
 
 ## CWE boundary in one diagram
 
@@ -137,7 +145,7 @@ single command-line argument
           |
           | embedded delimiter is not neutralized
           v
-recipient parses internal sub-option grammar       <- CWE-88 focus
+recipient parses internal option grammar           <- CWE-88 focus
           |
           +--> previously absent logical option
           |
@@ -147,9 +155,11 @@ recipient parses internal sub-option grammar       <- CWE-88 focus
                  duplicate resolution               <- CWE-235 may co-occur
 ```
 
-**CWE-141** overlaps at the broader delimiter-neutralization axis. This proposal does not
-try to replace CWE-141; it documents the **command/option-specific** manifestation already
-seen in CWE-88 mappings.
+**CWE-141** is the strongest overlap question because it already describes generic
+parameter/argument delimiter neutralization across upstream/downstream component boundaries.
+This proposal does not attempt to replace it. The argument for CWE-88 is narrower:
+**program invocation and command-option processing**, backed by recent published CWE-88
+mappings.
 
 The `inject-new` case is important because it proves that **CWE-235 is not required**: a new
 logical option is injected even when no duplicate exists. The `override` case then shows how
@@ -157,10 +167,10 @@ duplicate handling can amplify the impact.
 
 ## Important parser note
 
-The demonstrator uses `getsubopt()` as a compact standardized-style sub-option parser. The
-proposal does **not** claim that `getsubopt()` itself defines a last-wins duplicate policy.
-It returns sub-options sequentially; the demonstration program's repeated assignment to its
-configuration state is what makes the later `endpoint` value final.
+The demonstrator uses `getsubopt()` as a compact sub-option parser. The proposal does **not**
+claim that `getsubopt()` itself defines a last-wins duplicate policy. It returns sub-options
+sequentially; the demonstration program's repeated assignment to its configuration state is
+what makes the later `endpoint` value final.
 
 ## Product-independent scope
 
@@ -183,20 +193,47 @@ referenced later only when public and appropriate. See [`NOTICE.md`](NOTICE.md).
 ├── LICENSE
 ├── NOTICE.md
 ├── README.md
+├── tools/
+│   └── make-submission.sh
 └── submission/
     ├── README.md
+    ├── FORM-TEXT.md
     ├── modification-details.md
     ├── PRECEDENTS.md
+    ├── REVIEWER-NOTES.md
     ├── EXPECTED-RESULTS.md
     ├── poc/
     │   ├── caller.py
     │   └── demo_target.c
-    └── scripts/
-        └── run_demo.sh
+    ├── scripts/
+    │   ├── run_demo.sh
+    │   └── capture_evidence.sh
+    └── evidence/
+        ├── README.md
+        ├── build_log.txt
+        ├── run_demo.txt
+        └── sha256.txt
 ```
 
-The GitHub Actions workflow runs the same generalized demonstrator on each push and pull
-request. The compiled target is a generated local artifact and is excluded by `.gitignore`.
+## Build the submission ZIP
+
+The package builder first runs the generalized demo and verifies the committed source
+integrity manifest, then packages the canonical submission set without the compiled binary:
+
+```sh
+bash tools/make-submission.sh
+```
+
+It creates:
+
+```text
+dist/cwe-88-embedded-suboption-injection-submission.zip
+dist/cwe-88-embedded-suboption-injection-submission.zip.sha256
+```
+
+The GitHub Actions workflow performs the same verification on push/pull request and uploads
+the generated package as a workflow artifact. The compiled target and `dist/` output are
+generated artifacts and are excluded by `.gitignore`.
 
 ## Primary references
 
