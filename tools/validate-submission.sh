@@ -15,6 +15,7 @@ for required in \
     form-description.txt \
     modification-details.md \
     MAPPING-NOTES-PROPOSAL.md \
+    FINAL-REVIEW.md \
     PRECEDENTS.md \
     REVIEWER-NOTES.md \
     SUBMISSION-CHECKLIST.md \
