@@ -6,14 +6,36 @@ CWE-88's current Description. The primary proposal remains the field-level modif
 
 ## Why a mapping note is useful
 
-CWE-88 currently emphasizes command-string construction, while modern process APIs often
-preserve OS-level `argv` boundaries by passing arguments independently. That outer boundary
-can be correct and still leave an argument-injection weakness when a receiving command
-intentionally reparses one argument using a delimiter-separated option grammar.
+As of CWE 4.20, CWE-88's Description is explicitly framed around constructing a **string for
+a command**, while modern process APIs often preserve OS-level `argv` boundaries by passing
+arguments independently. That outer boundary can be correct and still leave an
+argument-injection weakness when a receiving command intentionally reparses one argument
+using a delimiter-separated option grammar.
 
 Published vulnerabilities already assigned CWE-88 demonstrate this command-option shape.
 The ambiguity is therefore useful to document even if the CWE Team decides that the current
 Description should remain unchanged.
+
+## Current CWE-88 / CWE-141 text already recognizes an overlap zone
+
+CWE-141 is the broader delimiter-neutralization entry: it describes an upstream component
+that fails to neutralize elements that can become parameter or argument delimiters when sent
+to a downstream component. Its own mitigation guidance explicitly points readers to
+**argument injection (CWE-88)** when discussing correct argument quoting/escaping.
+
+That makes the reviewer question a **mapping boundary** rather than a claim that one entry
+must make the other irrelevant:
+
+```text
+CWE-141
+  generic upstream -> downstream parameter/argument delimiter boundary
+
+CWE-88
+  command/program-invocation option boundary
+```
+
+The fallback request below makes that boundary explicit for receiving commands that parse a
+second option grammar inside one preserved OS-level argument.
 
 ## Proposed Mapping Notes text
 
@@ -91,3 +113,8 @@ Conservative outcome:
 
 Either outcome improves mapping consistency without creating a new CWE or claiming that the
 underlying delimiter-injection concept is novel.
+
+## Official CWE references
+
+- CWE-88: https://cwe.mitre.org/data/definitions/88.html
+- CWE-141: https://cwe.mitre.org/data/definitions/141.html
