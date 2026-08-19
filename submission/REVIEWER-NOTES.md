@@ -106,10 +106,19 @@ The proposed boundary is functional scope:
 The generalized example deliberately ends at a receiving executable's option parser. It is
 not a generic application protocol, record format, or arbitrary downstream parser.
 
+The current CWE content itself also acknowledges the overlap. CWE-141's mitigation guidance
+for safely quoting/escaping arguments explicitly warns readers to be careful of **argument
+injection (CWE-88)**. In other words, the official CWE text already recognizes that generic
+parameter/argument-delimiter neutralization and command-specific argument injection can
+intersect; the open question is where to draw the mapping boundary for this particular
+second-stage command grammar.
+
 More importantly, current real-world mapping practice already places this command-option
 shape in CWE-88. CVE-2026-6437 was assigned CWE-88 by Amazon for comma injection that the
 mount utility interprets as additional mount options. CVE-2026-41013 was assigned CWE-88 by
-its CNA for comma-delimited CIFS mount-option injection.
+its CNA for comma-delimited CIFS mount-option injection. CVE-2026-40113 is even more direct:
+the published advisory explains that the structured argument boundary remains intact and the
+receiving `gcloud` command performs the comma parsing itself.
 
 The submission therefore asks CWE-88 to **document an existing command-specific mapping
 practice**, while leaving CWE-141 as the broader delimiter category.
@@ -276,8 +285,8 @@ A conservative proposed replacement would be:
 
 > **The product constructs or supplies arguments, options, or switches for a command to be
 > executed by a separate component in another control sphere, but it does not properly
-> preserve or neutralize delimiters that determine the logical argument or option boundaries
-> interpreted by the receiving command.**
+> neutralize delimiters that determine how the receiving command separates or interprets
+> those arguments, options, or switches.**
 
 A following sentence in the Extended Description can scope the change:
 
