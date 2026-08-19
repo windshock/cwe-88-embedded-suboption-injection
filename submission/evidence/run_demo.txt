@@ -1,0 +1,70 @@
+=== control: untrusted field contains no delimiter ===
+[caller] case=control
+[caller] external_value=<42>
+[caller] list_elements=3
+[caller] command[0]=<./poc/demo_target>
+[caller] command[1]=<-o>
+[caller] command[2]=<endpoint=trusted.example,id=42>
+[caller] shell=False
+[caller] --- target output ---
+[target] argc=3
+[target] argv[0]=<./poc/demo_target>
+[target] argv[1]=<-o>
+[target] argv[2]=<endpoint=trusted.example,id=42>
+[parse] endpoint=trusted.example
+[parse] id=42
+[result] parsed_options=2
+[result] endpoint_occurrences=1
+[result] endpoint=trusted.example
+[result] id=42
+[result] log_target=unset
+[PASS] control
+
+=== inject-new: delimiter creates a previously absent sibling sub-option ===
+[caller] case=inject-new
+[caller] external_value=<42,log_target=attacker.example>
+[caller] list_elements=3
+[caller] command[0]=<./poc/demo_target>
+[caller] command[1]=<-o>
+[caller] command[2]=<endpoint=trusted.example,id=42,log_target=attacker.example>
+[caller] shell=False
+[caller] --- target output ---
+[target] argc=3
+[target] argv[0]=<./poc/demo_target>
+[target] argv[1]=<-o>
+[target] argv[2]=<endpoint=trusted.example,id=42,log_target=attacker.example>
+[parse] endpoint=trusted.example
+[parse] id=42
+[parse] log_target=attacker.example
+[result] parsed_options=3
+[result] endpoint_occurrences=1
+[result] endpoint=trusted.example
+[result] id=42
+[result] log_target=attacker.example
+[PASS] inject-new
+
+=== override: delimiter creates a duplicate security-sensitive sub-option ===
+[caller] case=override
+[caller] external_value=<42,endpoint=attacker.example>
+[caller] list_elements=3
+[caller] command[0]=<./poc/demo_target>
+[caller] command[1]=<-o>
+[caller] command[2]=<endpoint=trusted.example,id=42,endpoint=attacker.example>
+[caller] shell=False
+[caller] --- target output ---
+[target] argc=3
+[target] argv[0]=<./poc/demo_target>
+[target] argv[1]=<-o>
+[target] argv[2]=<endpoint=trusted.example,id=42,endpoint=attacker.example>
+[parse] endpoint=trusted.example
+[parse] id=42
+[parse] endpoint=attacker.example
+[result] parsed_options=3
+[result] endpoint_occurrences=2
+[result] endpoint=attacker.example
+[result] id=42
+[result] log_target=unset
+[PASS] override
+
+[PASS] all generalized CWE-88 embedded sub-option tests passed
+run_demo_exit=0
