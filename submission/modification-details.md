@@ -429,8 +429,9 @@ injects a delimiter in that grammar to create additional logical options.**
 
 # Demonstrated generalized evidence
 
-The repository contains a product-independent local demonstrator with no networking,
-filesystem mounting, credentials, vendor code, or shell execution.
+The repository contains a product-independent local demonstrator with no external network
+egress (only a single loopback HTTP request that models the untrusted intake), no filesystem
+mounting, no credentials, no vendor code, and no shell execution.
 
 Its decisive comparison is:
 
@@ -479,6 +480,14 @@ untrusted source
 ```
 
 This detection shape is easy to miss when analysis stops at the process-API boundary.
+
+To show it is machine-detectable, the repository ships product-independent static-analysis
+rules in [`detections/`](detections/): Semgrep and CodeQL rules for Python, Java,
+JavaScript/Node, and C. Each language has an intra-procedural rule plus an interprocedural
+CodeQL query that additionally catches the common case where the constructed option-argument
+is launched through a shared wrapper function. Positive/negative fixtures and reproducible
+test scripts (`detections/test/run-semgrep.sh`, `detections/test/run-codeql.sh`) confirm the
+detection matrix. See [`detections/README.md`](detections/README.md).
 
 ---
 

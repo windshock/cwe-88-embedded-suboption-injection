@@ -27,7 +27,7 @@ mkdir -p "$EVIDENCE"
 
 sha256sum \
     poc/demo_target.c \
-    poc/caller.py \
+    poc/web_app.py \
     scripts/run_demo.sh \
     > "$EVIDENCE/sha256.txt"
 

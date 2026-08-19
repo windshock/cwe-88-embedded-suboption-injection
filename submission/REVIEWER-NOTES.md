@@ -17,6 +17,12 @@ The generalized demonstrator in this repository deliberately does something slig
 different at the implementation layer:
 
 ```text
+externally controlled request parameter (untrusted intake)
+        |
+        v
+web application builds one option-argument (no delimiter neutralization)
+        |
+        v
 subprocess argument array
         |
         v
@@ -235,7 +241,8 @@ product. The target parser intentionally models a normal and common grammar:
 -o "key=value,key=value"
 ```
 
-The caller independently models the upstream construction error:
+The web application independently models the upstream construction error, embedding an
+untrusted request parameter into one option-argument without neutralizing the delimiter:
 
 ```text
 endpoint=trusted.example,id=<EXTERNAL>
@@ -249,7 +256,8 @@ The decisive property is comparative and observable:
 | inject-new | 3 | 2 | 3 | extra attacker-selected option exists |
 | override | 3 | 2 | 3 | duplicate endpoint; later demo assignment becomes final |
 
-The model contains no networking, shell execution, filesystem mounting, credentials, or
+The model contains no external network egress (only a single loopback HTTP request modeling
+the untrusted intake), no shell execution, no filesystem mounting, no credentials, and no
 vendor behavior. It isolates exactly the parser-boundary property being proposed for CWE
 text.
 
@@ -301,6 +309,38 @@ implementation assumption that the vulnerable representation must be one command
 If changing the Description is considered too broad, keep the current Description and ask
 for a narrower Extended Description / Relationship / Mapping Note clarification that tells
 mappers when embedded option parsing should be CWE-88 versus CWE-141.
+
+---
+
+## Objection 9 — "The demonstrator now includes a web application, so this is really CWE-20
+input validation"
+
+### Reviewer argument
+
+The demonstrator reads an untrusted value from an HTTP request parameter. A reviewer may say
+the real fix is to validate that input, making this an instance of CWE-20 (Improper Input
+Validation) rather than CWE-88.
+
+### Response
+
+The web intake is included only to make the untrusted **provenance** explicit; it is not the
+weakness site and does not change the mapping. Two points keep this in CWE-88:
+
+1. **The weakness is delimiter neutralization during argument construction, not business
+   validation of the field.** The application legitimately needs to forward the field's value.
+   The defect is that it embeds that value into a single option-argument without preserving or
+   neutralizing the delimiter that is significant to the receiving command's grammar. That is
+   the CWE-88 (child of CWE-77 / descendant of CWE-74 injection) failure, not a generic
+   failure to validate input.
+
+2. **CWE-20 is a broad, discouraged mapping.** CWE's own guidance treats CWE-20 as a
+   frequently-misused category and directs mappers to the more specific injection weakness
+   when the data crosses a downstream command/option boundary. The specific boundary here is
+   command-option processing, which is CWE-88.
+
+The intake could equally be a CLI argument, environment variable, file, or message field;
+the HTTP parameter is only a representative source. The mapping is driven by where the
+neutralization fails (argument/option construction), not by how the untrusted data arrived.
 
 ---
 

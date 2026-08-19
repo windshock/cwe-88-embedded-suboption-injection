@@ -50,6 +50,14 @@ bash tools/validate-submission.sh
 It should confirm the required files, source integrity manifest, product-independent boundary,
 and absence of prohibited compiled artifacts.
 
+- [ ] (Optional, if Semgrep / a current CodeQL CLI are available) Run the static detection
+      rule tests and confirm the matrix:
+
+```sh
+bash submission/detections/test/run-semgrep.sh
+bash submission/detections/test/run-codeql.sh
+```
+
 - [ ] Build the submission package:
 
 ```sh

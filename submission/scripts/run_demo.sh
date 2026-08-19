@@ -15,7 +15,7 @@ run_case() {
     out=$(mktemp)
     trap 'rm -f "$out"' EXIT HUP INT TERM
 
-    python3 "$POC/caller.py" "$name" --target "$TARGET" >"$out" 2>&1
+    python3 "$POC/web_app.py" "$name" --target "$TARGET" >"$out" 2>&1
     cat "$out"
 
     for expected in "$@"; do
@@ -30,10 +30,14 @@ run_case() {
     trap - EXIT HUP INT TERM
 }
 
-echo "=== control: untrusted field contains no delimiter ==="
+echo "=== control: untrusted web parameter contains no delimiter ==="
 run_case control \
-    "[caller] list_elements=3" \
-    "[caller] shell=False" \
+    "[client] role=simulated external requester (attacker-controlled input)" \
+    "[web] request_param id=<42>" \
+    "[web] delimiter_neutralization=none" \
+    "[web] constructed option_argument=<endpoint=trusted.example,id=42>" \
+    "[web] subprocess argv elements=3" \
+    "[web] shell=False" \
     "[target] argc=3" \
     "[result] parsed_options=2" \
     "[result] endpoint_occurrences=1" \
@@ -42,9 +46,12 @@ run_case control \
     "[result] log_target=unset"
 
 echo
-echo "=== inject-new: delimiter creates a previously absent sibling sub-option ==="
+echo "=== inject-new: web-parameter delimiter creates a previously absent sibling sub-option ==="
 run_case inject-new \
-    "[caller] list_elements=3" \
+    "[web] request_param id=<42,log_target=attacker.example>" \
+    "[web] constructed option_argument=<endpoint=trusted.example,id=42,log_target=attacker.example>" \
+    "[web] subprocess argv elements=3" \
+    "[web] shell=False" \
     "[target] argc=3" \
     "[target] argv[2]=<endpoint=trusted.example,id=42,log_target=attacker.example>" \
     "[result] parsed_options=3" \
@@ -52,9 +59,12 @@ run_case inject-new \
     "[result] log_target=attacker.example"
 
 echo
-echo "=== override: delimiter creates a duplicate security-sensitive sub-option ==="
+echo "=== override: web-parameter delimiter creates a duplicate security-sensitive sub-option ==="
 run_case override \
-    "[caller] list_elements=3" \
+    "[web] request_param id=<42,endpoint=attacker.example>" \
+    "[web] constructed option_argument=<endpoint=trusted.example,id=42,endpoint=attacker.example>" \
+    "[web] subprocess argv elements=3" \
+    "[web] shell=False" \
     "[target] argc=3" \
     "[target] argv[2]=<endpoint=trusted.example,id=42,endpoint=attacker.example>" \
     "[result] parsed_options=3" \

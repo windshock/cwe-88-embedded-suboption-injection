@@ -55,14 +55,22 @@ occurred in a **second-stage parser inside the receiving command**.
 ## Generalized demonstrator
 
 The repository contains a small, self-contained demonstration written specifically for this
-CWE proposal:
+CWE proposal. It models three roles so the untrusted intake is explicit:
 
-- [`submission/poc/caller.py`](submission/poc/caller.py) invokes a target with a Python
-  argument list and `shell=False`;
+- [`submission/poc/web_app.py`](submission/poc/web_app.py) plays two roles in one process:
+  a **simulated external requester** that sends an HTTP request whose `id` parameter carries
+  the untrusted value, and the **vulnerable web application** that receives that parameter
+  and embeds it into one `-o` option-argument without neutralizing the delimiter, then
+  invokes the target with a Python argument list and `shell=False`;
 - [`submission/poc/demo_target.c`](submission/poc/demo_target.c) receives one `-o`
   option-argument and parses it as a comma-separated `getsubopt()` language; and
 - [`submission/scripts/run_demo.sh`](submission/scripts/run_demo.sh) builds the target and
   verifies one control and two positive cases.
+
+The externally controlled value crosses a real trust boundary (an HTTP request parameter
+over the loopback interface). A web parameter is only a representative untrusted source; what
+matters for CWE-88 is that the constructing application forwards external data into a single
+argument without neutralizing the sub-option delimiter.
 
 Run it on a POSIX-like environment with `cc` and Python 3:
 
@@ -84,8 +92,27 @@ but the target's logical option set changes after it reparses the contents of `a
 See [`submission/EXPECTED-RESULTS.md`](submission/EXPECTED-RESULTS.md) and the captured
 [`submission/evidence/`](submission/evidence/) for exact assertions and a reference run.
 
-The demonstrator has no network side effects, does not launch a shell, uses no vendor code,
-and treats `trusted.example` / `attacker.example` only as inert documentation strings.
+The demonstrator performs no external network egress (only a single loopback HTTP request to
+model the untrusted intake), does not launch a shell, uses no vendor code, and treats
+`trusted.example` / `attacker.example` only as inert documentation strings.
+
+## Static detection rules
+
+To show the weakness class is machine-detectable, the proposal ships product-independent
+static-analysis rules in [`submission/detections/`](submission/detections/): **Semgrep and
+CodeQL** rules for **Python, Java, JavaScript/Node, and C**. Each language has an
+intra-procedural rule plus an interprocedural CodeQL query that also catches the common
+launch-wrapper idiom the intra-procedural rules miss. Positive/negative fixtures and
+reproducible test scripts are included:
+
+```sh
+bash submission/detections/test/run-semgrep.sh
+bash submission/detections/test/run-codeql.sh
+```
+
+See [`submission/detections/README.md`](submission/detections/README.md) for the verified
+detection matrix (`vulnerable`=flagged, `vulnerable_wrapped`=flagged only by the
+interprocedural query, `safe_fixed`=never flagged).
 
 ## Published precedent
 
@@ -144,13 +171,16 @@ the single-`argv`, second-stage command-option case.
 ## CWE boundary in one diagram
 
 ```text
-externally controlled value
+externally controlled web request parameter
           |
           v
-single command-line argument
+web application embeds the field into one argument   <- CWE-88 weak product
 "endpoint=trusted,id=<INPUT>"
           |
           | embedded delimiter is not neutralized
+          v
+structured process invocation (argument array, no shell)
+          |
           v
 recipient parses internal option grammar           <- CWE-88 focus
           |
@@ -218,8 +248,9 @@ inside the canonical generalized submission material.
     ├── REVIEWER-NOTES.md
     ├── SUBMISSION-CHECKLIST.md
     ├── EXPECTED-RESULTS.md
+    ├── detections/            (Semgrep + CodeQL rules, fixtures, tests — Python/Java/JS/C)
     ├── poc/
-    │   ├── caller.py
+    │   ├── web_app.py
     │   └── demo_target.c
     ├── scripts/
     │   ├── run_demo.sh

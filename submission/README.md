@@ -42,15 +42,28 @@ The main documents are:
 
 The demonstrator uses two programs:
 
-- `poc/caller.py` — constructs a process invocation with Python's argument-list API and
-  explicitly uses `shell=False`;
+- `poc/web_app.py` — models the front-end intake. In one process it runs a **simulated
+  external requester** that issues an HTTP request whose `id` parameter carries the untrusted
+  value, and the **vulnerable web application** that receives that parameter, embeds it into
+  one `-o` option-argument without neutralizing the delimiter, and then invokes the target
+  with Python's argument-list API and explicitly uses `shell=False`;
 - `poc/demo_target.c` — receives exactly one `-o` option-argument and parses its contents
   with a comma-delimited `getsubopt()` grammar.
 
 The intended structure is:
 
 ```text
-OS process layer
+intake layer (untrusted)
+
+GET /run?id=<EXTERNAL>            <- externally controlled web request parameter
+        |
+        v
+web application layer (CWE-88 weak product)
+
+option_argument = "endpoint=trusted.example,id=<EXTERNAL>"   <- no delimiter neutralization
+        |
+        v
+OS process layer (argument array, shell=False)
 
 argv[0] = demo_target
 argv[1] = -o
@@ -91,7 +104,7 @@ conceptually separate.
 
 ## 2. Why the outer argument array is not enough
 
-The caller deliberately uses:
+The web application deliberately uses:
 
 ```python
 subprocess.run(command, shell=False)
@@ -112,7 +125,13 @@ safe argv API  vs.  unsafe shell string
 It is:
 
 ```text
-outer argv grammar
+untrusted request parameter
+        |
+        v
+web application builds one option-argument (no delimiter neutralization)
+        |
+        v
+outer argv grammar (argument array, shell=False)
         |
         v
 one preserved argument
@@ -124,7 +143,9 @@ receiver-specific embedded grammar
 untrusted delimiter creates another logical option
 ```
 
-The proposed CWE-88 clarification is specifically about this second boundary.
+The proposed CWE-88 clarification is specifically about this second boundary. The intake is
+included only to make the untrusted provenance explicit; a web request parameter is one
+representative source among many (CLI argument, environment variable, file, message field).
 
 ---
 
@@ -179,7 +200,8 @@ meaningful side effect.
 
 It does **not**:
 
-- contact a network destination;
+- contact any external network destination (the only network activity is a single HTTP
+  request over the loopback interface, used to model the untrusted intake);
 - invoke a command shell;
 - modify system configuration;
 - mount a filesystem;
@@ -214,8 +236,9 @@ submission/
 ├── REVIEWER-NOTES.md
 ├── SUBMISSION-CHECKLIST.md
 ├── EXPECTED-RESULTS.md
+├── detections/            (Semgrep + CodeQL rules, fixtures, tests — Python/Java/JS/C)
 ├── poc/
-│   ├── caller.py
+│   ├── web_app.py
 │   └── demo_target.c
 ├── scripts/
 │   ├── run_demo.sh
@@ -344,3 +367,24 @@ CWE-141.
 
 Use [`SUBMISSION-CHECKLIST.md`](SUBMISSION-CHECKLIST.md) for the final pre-submit and
 post-receipt sequence.
+
+---
+
+## 10. Static detection rules
+
+[`detections/`](detections/) contains product-independent Semgrep and CodeQL rules for
+**Python, Java, JavaScript/Node, and C** that flag the generalized weakness: an externally
+influenced value embedded into one comma-separated `key=value` option-argument and passed to
+a non-shell process launcher. Each language ships an intra-procedural rule and an
+interprocedural CodeQL query that also catches the shared launch-wrapper idiom, with
+positive/negative fixtures and reproducible test scripts:
+
+```sh
+bash detections/test/run-semgrep.sh
+bash detections/test/run-codeql.sh
+```
+
+The verified matrix is `vulnerable`=flagged, `vulnerable_wrapped`=flagged only by the
+interprocedural CodeQL query, `safe_fixed`=never flagged. See
+[`detections/README.md`](detections/README.md). This demonstrates that the mapping shape the
+proposal asks CWE-88 to document is machine-detectable.

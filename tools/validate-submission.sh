@@ -21,7 +21,7 @@ for required in \
     SUBMISSION-CHECKLIST.md \
     EXPECTED-RESULTS.md \
     poc/demo_target.c \
-    poc/caller.py \
+    poc/web_app.py \
     scripts/run_demo.sh \
     evidence/sha256.txt; do
     [ -f "$SUBMISSION/$required" ] || fail "missing required submission file: $required"

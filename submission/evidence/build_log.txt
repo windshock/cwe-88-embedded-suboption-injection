@@ -1,7 +1,7 @@
 === toolchain ===
-cc (Debian 14.2.0-19) 14.2.0
-Python 3.13.5
-Linux 6.18.35 x86_64 GNU/Linux
+Apple clang version 16.0.0 (clang-1600.0.26.6)
+Python 3.14.6
+Darwin 23.6.0 arm64
 
 === build ===
 build_exit=0

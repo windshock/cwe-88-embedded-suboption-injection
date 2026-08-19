@@ -1,0 +1,50 @@
+rules:
+  - id: cwe88.embedded-suboption-injection-python
+    languages:
+      - python
+    severity: WARNING
+    message: >-
+      An externally influenced value is embedded into a single
+      delimiter-structured option-argument (a comma-separated key=value option
+      grammar) and passed to a process launcher through an argument list. The
+      receiving command can reparse an attacker-controlled delimiter as an
+      additional logical option, even though an argument list is used and no
+      shell performs tokenization. Represent each logical field as its own
+      argument, or neutralize the sub-option delimiter before embedding it
+      (CWE-88).
+    metadata:
+      cwe:
+        - "CWE-88"
+      category: security
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      subcategory:
+        - vuln
+      references:
+        - https://cwe.mitre.org/data/definitions/88.html
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern: |
+                  $CMD = $TMPL + $X
+                  ...
+                  $SINK(..., [..., $CMD, ...], ...)
+              - metavariable-regex:
+                  metavariable: $TMPL
+                  regex: '.*,.*=.*'
+          - pattern: |
+              $CMD = f"...,...={$X}..."
+              ...
+              $SINK(..., [..., $CMD, ...], ...)
+          - patterns:
+              - pattern: |
+                  $CMD = $TMPL % $X
+                  ...
+                  $SINK(..., [..., $CMD, ...], ...)
+              - metavariable-regex:
+                  metavariable: $TMPL
+                  regex: '.*,.*=.*'
+      - metavariable-regex:
+          metavariable: $SINK
+          regex: '(subprocess\.(run|Popen|call|check_call|check_output)|os\.(execv|execve|execvp|execvpe|spawnv|spawnve|spawnvp|posix_spawn|posix_spawnp))'

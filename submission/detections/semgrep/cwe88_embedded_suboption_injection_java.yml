@@ -1,0 +1,43 @@
+rules:
+  - id: cwe88.embedded-suboption-injection-java
+    languages:
+      - java
+    severity: WARNING
+    message: >-
+      An externally influenced value is embedded into a single
+      delimiter-structured option-argument (a comma-separated key=value option
+      grammar) and passed to a process launcher through an argument array. The
+      receiving command can reparse an attacker-controlled delimiter as an
+      additional logical option, even though an argument array is used and no
+      shell performs tokenization. Represent each logical field as its own
+      argument, or neutralize the sub-option delimiter before embedding it
+      (CWE-88).
+    metadata:
+      cwe:
+        - "CWE-88"
+      category: security
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      subcategory:
+        - vuln
+      references:
+        - https://cwe.mitre.org/data/definitions/88.html
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern: |
+                  String $CMD = $TMPL + $X;
+                  ...
+                  new ProcessBuilder(..., $CMD, ...);
+              - metavariable-regex:
+                  metavariable: $TMPL
+                  regex: '.*,.*=.*'
+          - patterns:
+              - pattern: |
+                  String $CMD = $TMPL + $X;
+                  ...
+                  Runtime.getRuntime().exec(..., $CMD, ...);
+              - metavariable-regex:
+                  metavariable: $TMPL
+                  regex: '.*,.*=.*'

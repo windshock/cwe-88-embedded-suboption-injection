@@ -1,0 +1,71 @@
+rules:
+  - id: cwe88.embedded-suboption-injection-c
+    languages:
+      - c
+      - cpp
+    severity: WARNING
+    message: >-
+      An externally influenced value is formatted into a single
+      delimiter-structured option-argument (a comma-separated key=value option
+      grammar) and passed to a non-shell process launcher through an argument
+      vector. The receiving command can reparse an attacker-controlled delimiter
+      as an additional logical option, even though an argument vector is used and
+      no shell performs tokenization. Represent each logical field as its own
+      argument, or neutralize the sub-option delimiter before embedding it
+      (CWE-88).
+    metadata:
+      cwe:
+        - "CWE-88"
+      category: security
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      subcategory:
+        - vuln
+      references:
+        - https://cwe.mitre.org/data/definitions/88.html
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern: |
+                  snprintf($CMD, $SIZE, $FMT, ...);
+                  ...
+                  char *$ARGV[] = {..., $CMD, ...};
+                  ...
+                  $SINK(...);
+              - metavariable-regex:
+                  metavariable: $FMT
+                  regex: '.*,.*=.*%s.*'
+          - patterns:
+              - pattern: |
+                  sprintf($CMD, $FMT, ...);
+                  ...
+                  char *$ARGV[] = {..., $CMD, ...};
+                  ...
+                  $SINK(...);
+              - metavariable-regex:
+                  metavariable: $FMT
+                  regex: '.*,.*=.*%s.*'
+          - patterns:
+              - pattern: |
+                  swprintf($CMD, $SIZE, $FMT, ...);
+                  ...
+                  char *$ARGV[] = {..., $CMD, ...};
+                  ...
+                  $SINK(...);
+              - metavariable-regex:
+                  metavariable: $FMT
+                  regex: '.*,.*=.*%s.*'
+          - patterns:
+              - pattern: |
+                  _snwprintf($CMD, $SIZE, $FMT, ...);
+                  ...
+                  char *$ARGV[] = {..., $CMD, ...};
+                  ...
+                  $SINK(...);
+              - metavariable-regex:
+                  metavariable: $FMT
+                  regex: '.*,.*=.*%s.*'
+      - metavariable-regex:
+          metavariable: $SINK
+          regex: '(execv|execvp|execve|execvpe|execl|execlp|execle|posix_spawn|posix_spawnp)'

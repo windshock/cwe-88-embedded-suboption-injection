@@ -1,0 +1,4 @@
+name: cwe88/python-detections
+version: 0.0.1
+dependencies:
+  codeql/python-all: "*"

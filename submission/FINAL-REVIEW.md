@@ -147,9 +147,17 @@ The demonstration has a strong differential control:
 | inject-new | 3 | 3 | No |
 | override | 3 | 3 | Yes, only for the override variant |
 
-It has no networking, shell execution, filesystem mounting, credentials, or vendor code.
-The evidence therefore demonstrates the taxonomy point without turning the CWE repository
-into a product exploit repository.
+It has no external network egress (only a single loopback HTTP request that models the
+untrusted intake), no shell execution, no filesystem mounting, no credentials, and no vendor
+code. The evidence therefore demonstrates the taxonomy point without turning the CWE
+repository into a product exploit repository.
+
+The demonstrator deliberately makes the untrusted **intake** explicit: the injected value
+arrives as a web request parameter and crosses a trust boundary into the constructing
+application. This strengthens the argument-injection provenance (attacker-controlled data ->
+argument construction -> receiving parser) without adding product specifics. If a reviewer
+argues the intake makes this CWE-20, see Objection 9 in `REVIEWER-NOTES.md`: the weakness is
+delimiter neutralization during argument construction, not business validation of the field.
 
 ## Fifth reviewer objection: "Argument arrays are already the fix"
 

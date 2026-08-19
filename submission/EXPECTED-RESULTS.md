@@ -3,6 +3,12 @@
 This document defines the expected output of the product-independent demonstrator under
 `submission/poc/`.
 
+The demonstrator models the front-end intake explicitly. `poc/web_app.py` starts a small
+web application on the loopback interface and issues one HTTP request whose `id` parameter
+carries the externally controlled value. The web application (the CWE-88 weak product) then
+embeds that value into a single `-o` option-argument **without neutralizing the sub-option
+delimiter** and invokes `poc/demo_target` with a structured argument array and `shell=False`.
+
 The test intentionally separates three properties:
 
 1. a negative control with no embedded delimiter;
@@ -10,8 +16,10 @@ The test intentionally separates three properties:
 3. injection of a duplicate security-sensitive sub-option whose later assignment replaces
    the earlier state in this demonstration parser.
 
-The demonstrator performs no network access, shell execution, privilege change, or vendor-
-specific operation. Its observable result is the parser state printed to standard output.
+The demonstrator performs **no external network egress** (only a single loopback HTTP
+request), no shell execution, no privilege change, and no vendor-specific operation. Its
+observable result is the web-application response body, which contains the intake markers and
+the receiving parser state printed to standard output.
 
 ## Build and run
 
@@ -33,13 +41,13 @@ and exits with status `0`.
 
 ## Case 1 — `control`
 
-The caller models an external field containing only ordinary data:
+The external requester supplies an `id` parameter containing only ordinary data:
 
 ```text
 42
 ```
 
-It constructs one option-argument:
+The web application constructs one option-argument:
 
 ```text
 endpoint=trusted.example,id=42
@@ -48,8 +56,11 @@ endpoint=trusted.example,id=42
 Expected properties:
 
 ```text
-[caller] list_elements=3
-[caller] shell=False
+[web] request_param id=<42>
+[web] delimiter_neutralization=none
+[web] constructed option_argument=<endpoint=trusted.example,id=42>
+[web] subprocess argv elements=3
+[web] shell=False
 [target] argc=3
 [target] argv[2]=<endpoint=trusted.example,id=42>
 [result] parsed_options=2
@@ -67,14 +78,14 @@ OS-level argument.
 
 ## Case 2 — `inject-new`
 
-The fixed demonstration input is:
+The fixed demonstration `id` parameter is:
 
 ```text
 42,log_target=attacker.example
 ```
 
-The caller still creates the same number of OS-level arguments, but the third element now
-contains:
+The web application still creates the same number of OS-level arguments, but the third
+element now contains:
 
 ```text
 endpoint=trusted.example,id=42,log_target=attacker.example
@@ -83,7 +94,10 @@ endpoint=trusted.example,id=42,log_target=attacker.example
 Expected properties:
 
 ```text
-[caller] list_elements=3
+[web] request_param id=<42,log_target=attacker.example>
+[web] constructed option_argument=<endpoint=trusted.example,id=42,log_target=attacker.example>
+[web] subprocess argv elements=3
+[web] shell=False
 [target] argc=3
 [target] argv[2]=<endpoint=trusted.example,id=42,log_target=attacker.example>
 [result] parsed_options=3
@@ -108,7 +122,7 @@ This is the core CWE-88 behavior proposed for explicit documentation.
 
 ## Case 3 — `override`
 
-The fixed demonstration input is:
+The fixed demonstration `id` parameter is:
 
 ```text
 42,endpoint=attacker.example
@@ -123,7 +137,10 @@ endpoint=trusted.example,id=42,endpoint=attacker.example
 Expected properties:
 
 ```text
-[caller] list_elements=3
+[web] request_param id=<42,endpoint=attacker.example>
+[web] constructed option_argument=<endpoint=trusted.example,id=42,endpoint=attacker.example>
+[web] subprocess argv elements=3
+[web] shell=False
 [target] argc=3
 [target] argv[2]=<endpoint=trusted.example,id=42,endpoint=attacker.example>
 [result] parsed_options=3

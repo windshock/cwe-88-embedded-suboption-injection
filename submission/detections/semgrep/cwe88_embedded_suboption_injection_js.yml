@@ -1,0 +1,55 @@
+rules:
+  - id: cwe88.embedded-suboption-injection-js
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: >-
+      An externally influenced value is embedded into a single
+      delimiter-structured option-argument (a comma-separated key=value option
+      grammar) and passed to a process launcher through an argument array. The
+      receiving command can reparse an attacker-controlled delimiter as an
+      additional logical option, even though an argument array is used and no
+      shell performs tokenization. Represent each logical field as its own
+      argument, or neutralize the sub-option delimiter before embedding it
+      (CWE-88).
+    metadata:
+      cwe:
+        - "CWE-88"
+      category: security
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      subcategory:
+        - vuln
+      references:
+        - https://cwe.mitre.org/data/definitions/88.html
+    patterns:
+      - pattern-either:
+          # Template literal with a substitution, whose literal part carries the
+          # comma/equals option grammar, flowing into a launcher argument array.
+          - patterns:
+              - pattern: |
+                  $CMD = $TMPL;
+                  ...
+                  $SINK(..., [..., $CMD, ...], ...);
+              - metavariable-pattern:
+                  metavariable: $TMPL
+                  patterns:
+                    - pattern: '`...${$X}...`'
+              - metavariable-regex:
+                  metavariable: $TMPL
+                  regex: '.*,.*=.*'
+          # String concatenation whose constant part carries the comma/equals
+          # option grammar, flowing into a launcher argument array.
+          - patterns:
+              - pattern: |
+                  $CMD = $TMPL + $X;
+                  ...
+                  $SINK(..., [..., $CMD, ...], ...);
+              - metavariable-regex:
+                  metavariable: $TMPL
+                  regex: '.*,.*=.*'
+      - metavariable-regex:
+          metavariable: $SINK
+          regex: '.*(execFile|spawn|execFileSync|spawnSync)$'

@@ -12,10 +12,18 @@ It does **not** contain:
 - confidential product information; or
 - an exploit package for a specific product vulnerability.
 
-The generalized demonstration is written from scratch. It models only this parser boundary:
+The generalized demonstration is written from scratch. It models only this intake-and-parser
+boundary:
 
 ```text
-structured process invocation
+externally controlled web request parameter
+        |
+        v
+web application constructs one option-argument
+(no delimiter neutralization)
+        |
+        v
+structured process invocation (argument array, no shell)
         |
         v
 one OS-level option-argument
@@ -27,8 +35,10 @@ delimiter-separated sub-option grammar
 externally controlled delimiter creates an unintended logical option
 ```
 
-The demonstration has no network side effect, does not invoke a shell, does not alter
-system configuration, and uses reserved `.example` domain names only as inert strings.
+The demonstration performs **no external network egress**: it issues a single HTTP request
+over the loopback interface only, to model the untrusted intake crossing a trust boundary
+into the vulnerable application. It does not invoke a shell, does not alter system
+configuration, and uses reserved `.example` domain names only as inert strings.
 
 A concrete observed instance of this weakness class, if disclosed separately under a
 product's own coordinated vulnerability-disclosure process, is outside the scope of this
