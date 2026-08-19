@@ -29,3 +29,12 @@ jobs:
 
       - name: Build submission package
         run: bash tools/make-submission.sh
+
+      - name: Upload submission package
+        uses: actions/upload-artifact@v4
+        with:
+          name: cwe-88-submission-package
+          path: |
+            dist/cwe-88-embedded-suboption-injection-submission.zip
+            dist/cwe-88-embedded-suboption-injection-submission.zip.sha256
+          if-no-files-found: error
