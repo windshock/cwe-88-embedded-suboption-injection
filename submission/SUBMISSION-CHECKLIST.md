@@ -63,6 +63,8 @@ dist/cwe-88-embedded-suboption-injection-submission.zip.sha256
 
 - [ ] Open `submission/FORM-TEXT.md` as the canonical concise wording, or use
       `submission/form-description.txt` for direct plain-text copy/paste.
+- [ ] Review `submission/MAPPING-NOTES-PROPOSAL.md` as the conservative fallback if the CWE
+      Team prefers not to broaden CWE-88's current Description.
 - [ ] Keep the action as **Modification**, not New CWE.
 - [ ] Identify **CWE-88** as the relevant/affected CWE.
 - [ ] Provide the suggested modification details from the form text and include the public
@@ -94,7 +96,8 @@ Therefore be prepared for either outcome:
    Description text defining when embedded option parsing is CWE-88 versus CWE-141.
 
 The fallback is still a useful CWE content improvement and should not be treated as failure.
-See `REVIEWER-NOTES.md` for the full objection analysis.
+Use `MAPPING-NOTES-PROPOSAL.md` as the ready-to-send fallback wording and
+`REVIEWER-NOTES.md` for the full objection analysis.
 
 ## Product-specific disclosure boundary
 
@@ -127,14 +130,20 @@ Prioritize the following materials:
 
 1. `submission/FORM-TEXT.md` — concise requested change;
 2. `submission/modification-details.md` — full field-level rationale;
-3. `submission/REVIEWER-NOTES.md` — CWE-141 / CWE-235 / current-description boundary;
-4. `submission/PRECEDENTS.md` — independent real-world mappings;
-5. `submission/evidence/run_demo.txt` — decisive `argc=3` comparison; and
-6. `submission/poc/` — minimal product-independent source.
+3. `submission/MAPPING-NOTES-PROPOSAL.md` — conservative fallback / boundary wording;
+4. `submission/REVIEWER-NOTES.md` — CWE-141 / CWE-235 / current-description boundary;
+5. `submission/PRECEDENTS.md` — independent real-world mappings;
+6. `submission/evidence/run_demo.txt` — decisive `argc=3` comparison; and
+7. `submission/poc/` — minimal product-independent source.
 
 If reviewers challenge CWE-88 versus CWE-141, lead with the **current CWE-88 Program
 Invocation scope and the direct CNA mappings of CVE-2026-40113 / CVE-2026-6437 /
 CVE-2026-41013**, then acknowledge that CWE-141 is the broader generic delimiter weakness.
+
+If reviewers are reluctant to alter CWE-88's Description, immediately pivot to the fallback:
+keep the current Description and request an Extended Description / Mapping Notes clarification
+that explains the single-`argv`, second-stage command-option case and its boundary with
+CWE-141.
 
 ## Official process reference
 
