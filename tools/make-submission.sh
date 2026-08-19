@@ -8,12 +8,21 @@ NAME="cwe-88-embedded-suboption-injection-submission"
 STAGE="$DIST/$NAME"
 ZIP="$DIST/$NAME.zip"
 
+command -v git >/dev/null 2>&1 || {
+    echo "error: git is required to identify canonical tracked submission files" >&2
+    exit 2
+}
 command -v zip >/dev/null 2>&1 || {
     echo "error: zip is required" >&2
     exit 2
 }
 command -v sha256sum >/dev/null 2>&1 || {
     echo "error: sha256sum is required" >&2
+    exit 2
+}
+
+git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
+    echo "error: run this builder from a git checkout of the repository" >&2
     exit 2
 }
 
@@ -30,20 +39,14 @@ mkdir -p "$STAGE"
     bash scripts/run_demo.sh
 )
 
-# Copy only the canonical submission material. Do not ship locally compiled
-# binaries, object files, caches, or repository metadata.
-(
-    cd "$SUBMISSION"
-    find . -type f \
-        ! -path './poc/demo_target' \
-        ! -name '*.o' \
-        ! -name '*.pyc' \
-        ! -path '*/__pycache__/*' \
-        -print
-) | while IFS= read -r rel; do
-    rel=${rel#./}
+# Package only files that are tracked by git below submission/. This prevents
+# editor backups, local experiment files, compiled artifacts, or unrelated
+# disclosure material from being swept into the ZIP by a broad directory copy.
+git -C "$ROOT" ls-files 'submission/**' | while IFS= read -r tracked; do
+    rel=${tracked#submission/}
+    [ "$rel" != "$tracked" ] || continue
     mkdir -p "$STAGE/$(dirname "$rel")"
-    cp "$SUBMISSION/$rel" "$STAGE/$rel"
+    cp "$ROOT/$tracked" "$STAGE/$rel"
 done
 
 # Include repository-level scope/license notices with the submission set.
@@ -58,6 +61,6 @@ cp "$ROOT/LICENSE" "$STAGE/LICENSE"
 
 rm -rf "$STAGE"
 
-echo "[PASS] submission package created"
+echo "[PASS] submission package created from tracked canonical files"
 echo "       $ZIP"
 echo "       $ZIP.sha256"
