@@ -2,8 +2,10 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-POC="$ROOT/poc"
-TARGET="$POC/demo_target"
+cd "$ROOT"
+
+POC="poc"
+TARGET="./poc/demo_target"
 
 cc -std=c11 -Wall -Wextra -Werror -O2 "$POC/demo_target.c" -o "$TARGET"
 
