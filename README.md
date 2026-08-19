@@ -128,7 +128,9 @@ The submission proposes a modification rather than a new CWE:
    broader delimiter weakness in **CWE-141** and from duplicate-parameter handling in
    **CWE-235**.
 
-The concise submission-form draft is in [`submission/FORM-TEXT.md`](submission/FORM-TEXT.md).
+The concise Markdown submission draft is in
+[`submission/FORM-TEXT.md`](submission/FORM-TEXT.md), with a direct copy/paste plain-text
+version in [`submission/form-description.txt`](submission/form-description.txt).
 The longer field-by-field rationale is in
 [`submission/modification-details.md`](submission/modification-details.md), and the most
 likely reviewer objections are stress-tested in
@@ -184,6 +186,11 @@ This repository intentionally does **not** contain:
 A concrete product instance belongs in its own coordinated disclosure process and can be
 referenced later only when public and appropriate. See [`NOTICE.md`](NOTICE.md).
 
+Before packaging, [`tools/validate-submission.sh`](tools/validate-submission.sh) automatically
+checks the required files, verifies the PoC integrity manifest, rejects compiled artifacts,
+and fails if identifiers from the separately coordinated product report accidentally appear
+inside the canonical generalized submission material.
+
 ## Repository layout
 
 ```text
@@ -194,13 +201,16 @@ referenced later only when public and appropriate. See [`NOTICE.md`](NOTICE.md).
 ├── NOTICE.md
 ├── README.md
 ├── tools/
-│   └── make-submission.sh
+│   ├── make-submission.sh
+│   └── validate-submission.sh
 └── submission/
     ├── README.md
     ├── FORM-TEXT.md
+    ├── form-description.txt
     ├── modification-details.md
     ├── PRECEDENTS.md
     ├── REVIEWER-NOTES.md
+    ├── SUBMISSION-CHECKLIST.md
     ├── EXPECTED-RESULTS.md
     ├── poc/
     │   ├── caller.py
@@ -215,25 +225,34 @@ referenced later only when public and appropriate. See [`NOTICE.md`](NOTICE.md).
         └── sha256.txt
 ```
 
-## Build the submission ZIP
+## Validate and build the submission ZIP
 
-The package builder first runs the generalized demo and verifies the committed source
-integrity manifest, then packages the canonical submission set without the compiled binary:
+Run the submission hygiene checks directly with:
+
+```sh
+bash tools/validate-submission.sh
+```
+
+Then build the package:
 
 ```sh
 bash tools/make-submission.sh
 ```
 
-It creates:
+The package builder reruns the validation and generalized demo before creating:
 
 ```text
 dist/cwe-88-embedded-suboption-injection-submission.zip
 dist/cwe-88-embedded-suboption-injection-submission.zip.sha256
 ```
 
-The GitHub Actions workflow performs the same verification on push/pull request and uploads
-the generated package as a workflow artifact. The compiled target and `dist/` output are
-generated artifacts and are excluded by `.gitignore`.
+GitHub Actions performs the same verification on push/pull request and uploads the generated
+package as a workflow artifact. The workflow also supports **manual dispatch**, so a clean
+submission ZIP can be generated on demand from the repository state. The compiled target and
+`dist/` output are generated artifacts and are excluded by `.gitignore`.
+
+For the final pre-submit and post-receipt procedure, use
+[`submission/SUBMISSION-CHECKLIST.md`](submission/SUBMISSION-CHECKLIST.md).
 
 ## Primary references
 
