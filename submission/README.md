@@ -15,10 +15,17 @@ inside one OS-level argument.
 > as a delimiter-separated sub-option language, allowing attacker-controlled delimiters to
 > create additional logical options even when no new OS-level `argv` element is created.**
 
-For the field-by-field CWE text proposal, see
-[`modification-details.md`](modification-details.md). For the precedent and CWE-boundary
-analysis, see [`PRECEDENTS.md`](PRECEDENTS.md). For exact demonstration assertions, see
-[`EXPECTED-RESULTS.md`](EXPECTED-RESULTS.md).
+The main documents are:
+
+- [`FORM-TEXT.md`](FORM-TEXT.md) — concise text intended for the CWE submission form;
+- [`modification-details.md`](modification-details.md) — field-by-field rationale and
+  proposed CWE content;
+- [`PRECEDENTS.md`](PRECEDENTS.md) — published CVE, CAPEC, historical, and standards
+  precedents;
+- [`REVIEWER-NOTES.md`](REVIEWER-NOTES.md) — likely overlap/reviewer objections and proposed
+  responses;
+- [`EXPECTED-RESULTS.md`](EXPECTED-RESULTS.md) — exact demonstrator assertions; and
+- [`evidence/`](evidence/) — captured build/run evidence and source integrity manifest.
 
 > **Submission status.** Prepared for review; not yet submitted to or accepted by the CWE
 > Program. Nothing in this repository should be interpreted as MITRE endorsement.
@@ -148,6 +155,15 @@ A successful run ends with:
 See [`EXPECTED-RESULTS.md`](EXPECTED-RESULTS.md) for the complete expected state for each
 case.
 
+To refresh the captured evidence after an intentional PoC change:
+
+```sh
+bash submission/scripts/capture_evidence.sh
+```
+
+This updates `evidence/build_log.txt`, `evidence/run_demo.txt`, and the SHA-256 manifest for
+the core demonstrator files.
+
 ---
 
 ## 4. Why the demonstrator is product-independent
@@ -179,17 +195,44 @@ disclosure process.
 ```text
 submission/
 ├── README.md
+├── FORM-TEXT.md
 ├── modification-details.md
 ├── PRECEDENTS.md
+├── REVIEWER-NOTES.md
 ├── EXPECTED-RESULTS.md
 ├── poc/
 │   ├── caller.py
 │   └── demo_target.c
-└── scripts/
-    └── run_demo.sh
+├── scripts/
+│   ├── run_demo.sh
+│   └── capture_evidence.sh
+└── evidence/
+    ├── README.md
+    ├── build_log.txt
+    ├── run_demo.txt
+    └── sha256.txt
 ```
 
 The compiled `demo_target` binary is a local build artifact and should not be committed.
+
+The repository-level package builder runs the demonstrator, verifies the integrity manifest,
+and creates a ZIP containing only the canonical submission material plus the license/scope
+notices:
+
+```sh
+bash tools/make-submission.sh
+```
+
+Expected output files:
+
+```text
+dist/cwe-88-embedded-suboption-injection-submission.zip
+dist/cwe-88-embedded-suboption-injection-submission.zip.sha256
+```
+
+The `dist/` tree and local binary are ignored by git. GitHub Actions performs the same test
+and package build on push/pull request and publishes the generated ZIP as a workflow
+artifact.
 
 ---
 
@@ -200,11 +243,18 @@ The compiled `demo_target` binary is a local build artifact and should not be co
 The attacker-controlled delimiter creates a logical command option that the caller did not
 intend the receiving program to process.
 
-### CWE-141 — broader delimiter abstraction
+### CWE-141 — strongest overlap question
 
 CWE-141 describes the generic case where input contains delimiters that become significant
-to a downstream component. The proposal does not dispute that overlap; it clarifies the
-command/option-specific manifestation already mapped to CWE-88 in published CVEs.
+to a downstream component. The proposal does not dispute that overlap. Instead, it asks
+CWE-88 to make its **program-invocation / command-option** manifestation explicit, consistent
+with recent published vulnerabilities already mapped to CWE-88.
+
+The current CWE-88 Description is also string-focused. `REVIEWER-NOTES.md` therefore treats
+this as the main review question rather than hiding it: either CWE-88's Description should be
+slightly generalized to cover the receiving command's logical option grammar, or the CWE
+entry should at minimum contain a mapping/boundary note explaining when the single-argument
+case belongs to CWE-88 versus CWE-141.
 
 ### CWE-235 — optional duplicate-handling step
 
@@ -249,3 +299,18 @@ Thus the outer process interface is unchanged while the receiving command's logi
 set changes because of attacker-controlled delimiter data.
 
 That is the exact ambiguity the proposed CWE-88 modification is intended to remove.
+
+---
+
+## 9. Submission posture
+
+The strongest form of the submission is intentionally conservative:
+
+> Recent vulnerabilities already assigned CWE-88 demonstrate command option injection in
+> which OS-level argument boundaries remain intact but a receiving command reparses one
+> argument as a delimiter-separated option language. The requested modification aligns
+> CWE-88's wording, mitigation guidance, and examples with that observed mapping practice
+> while explicitly bounding overlap with CWE-141 and CWE-235.
+
+This is a **CWE content-improvement request**, not a claim that delimiter injection or
+parameter pollution is a newly discovered attack category.
