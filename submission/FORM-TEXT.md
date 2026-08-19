@@ -113,6 +113,25 @@ previously absent logical option already demonstrates the CWE-88 behavior.
 **CWE-78** is not required. The receiving executable can parse the embedded delimiter itself;
 no command shell or interpreter is necessary.
 
+### Conservative fallback if the CWE-88 Description is intentionally kept string-focused
+
+If the CWE Team prefers not to broaden the current CWE-88 Description, please consider
+retaining that Description while adding an Extended Description and/or Mapping Notes
+clarification for this already-observed mapping case:
+
+> When mapping argument-injection vulnerabilities, creation of a new OS-level command-line
+> argument is not necessarily required. A receiving command may parse a structured option
+> grammar within a single argument, such as a comma-separated list of key/value options. If
+> externally controlled data injects a delimiter that causes the receiving command to
+> process an unintended logical option or switch, CWE-88 can be appropriate even when the
+> caller uses an argument-array API, the OS-level argument count remains unchanged, and no
+> shell performs the relevant tokenization. CWE-141 remains the broader generic delimiter
+> weakness; CWE-235 may additionally apply when an injected option duplicates an existing
+> name and duplicate handling is itself incorrect.
+
+The expanded fallback wording and decision guide are available in
+`submission/MAPPING-NOTES-PROPOSAL.md`.
+
 ### Published mapping precedent
 
 - **CVE-2026-40113** — a single `gcloud --set-env-vars` argument contains comma-separated
@@ -134,6 +153,7 @@ https://github.com/windshock/cwe-88-embedded-suboption-injection/blob/main/submi
 
 Supporting files:
 
+- https://github.com/windshock/cwe-88-embedded-suboption-injection/blob/main/submission/MAPPING-NOTES-PROPOSAL.md
 - https://github.com/windshock/cwe-88-embedded-suboption-injection/blob/main/submission/PRECEDENTS.md
 - https://github.com/windshock/cwe-88-embedded-suboption-injection/blob/main/submission/REVIEWER-NOTES.md
 - https://github.com/windshock/cwe-88-embedded-suboption-injection/blob/main/submission/EXPECTED-RESULTS.md
