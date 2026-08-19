@@ -12,18 +12,22 @@ inside one OS-level argument.
 
 > **CWE-88 should explicitly cover cases in which externally controlled data is embedded
 > within a single command-line argument whose value is parsed by the receiving component
-> as a delimiter-separated sub-option language, allowing attacker-controlled delimiters to
+> as a delimiter-separated option language, allowing attacker-controlled delimiters to
 > create additional logical options even when no new OS-level `argv` element is created.**
 
 The main documents are:
 
-- [`FORM-TEXT.md`](FORM-TEXT.md) — concise text intended for the CWE submission form;
+- [`FORM-TEXT.md`](FORM-TEXT.md) — concise Markdown text intended for the CWE submission
+  form;
+- [`form-description.txt`](form-description.txt) — plain-text copy/paste form content;
 - [`modification-details.md`](modification-details.md) — field-by-field rationale and
   proposed CWE content;
 - [`PRECEDENTS.md`](PRECEDENTS.md) — published CVE, CAPEC, historical, and standards
   precedents;
 - [`REVIEWER-NOTES.md`](REVIEWER-NOTES.md) — likely overlap/reviewer objections and proposed
   responses;
+- [`SUBMISSION-CHECKLIST.md`](SUBMISSION-CHECKLIST.md) — pre-submit, receipt, and follow-up
+  checklist;
 - [`EXPECTED-RESULTS.md`](EXPECTED-RESULTS.md) — exact demonstrator assertions; and
 - [`evidence/`](evidence/) — captured build/run evidence and source integrity manifest.
 
@@ -55,7 +59,7 @@ argv[2] = "endpoint=trusted.example,id=<EXTERNAL>"
 receiving command layer
 
 endpoint=<value>,id=<value>,...
-        comma-delimited logical sub-options
+        comma-delimited logical options
 ```
 
 The negative control uses external data that contains no comma. Two logical options are
@@ -76,9 +80,9 @@ The second positive case embeds:
 42,endpoint=attacker.example
 ```
 
-which creates a duplicate `endpoint` sub-option. The demo's own repeated assignment logic
-makes the later endpoint the final parser state. This illustrates how CWE-88 can combine
-with duplicate-parameter handling similar to CWE-235, while keeping the two weaknesses
+which creates a duplicate `endpoint` option. The demo's own repeated assignment logic makes
+the later endpoint the final parser state. This illustrates how CWE-88 can combine with
+duplicate-parameter handling similar to CWE-235, while keeping the two weaknesses
 conceptually separate.
 
 ---
@@ -141,7 +145,7 @@ The script:
 
 1. compiles `poc/demo_target.c` locally;
 2. runs a negative control;
-3. runs the new-sub-option injection case;
+3. runs the new-option injection case;
 4. runs the duplicate-option override case;
 5. asserts the expected `argc`, logical option counts, and final parser state; and
 6. exits nonzero if any assertion fails.
@@ -188,6 +192,11 @@ A concrete product vulnerability may motivate or later support the CWE modificat
 is outside the demonstrator itself and should be handled through that product's coordinated
 disclosure process.
 
+The repository-level `tools/validate-submission.sh` enforces this boundary before packaging:
+it checks required files, verifies the core SHA-256 manifest, rejects compiled artifacts,
+and fails if identifiers from the separately coordinated product report are accidentally
+introduced into the canonical generalized submission material.
+
 ---
 
 ## 5. Package layout
@@ -196,9 +205,11 @@ disclosure process.
 submission/
 ├── README.md
 ├── FORM-TEXT.md
+├── form-description.txt
 ├── modification-details.md
 ├── PRECEDENTS.md
 ├── REVIEWER-NOTES.md
+├── SUBMISSION-CHECKLIST.md
 ├── EXPECTED-RESULTS.md
 ├── poc/
 │   ├── caller.py
@@ -215,9 +226,15 @@ submission/
 
 The compiled `demo_target` binary is a local build artifact and should not be committed.
 
-The repository-level package builder runs the demonstrator, verifies the integrity manifest,
-and creates a ZIP containing only the canonical submission material plus the license/scope
-notices:
+Validate the canonical set from the repository root:
+
+```sh
+bash tools/validate-submission.sh
+```
+
+The package builder reruns that validation and the generalized demonstrator, then creates a
+ZIP containing only the canonical submission material plus the repository-level license and
+scope notice:
 
 ```sh
 bash tools/make-submission.sh
@@ -232,7 +249,7 @@ dist/cwe-88-embedded-suboption-injection-submission.zip.sha256
 
 The `dist/` tree and local binary are ignored by git. GitHub Actions performs the same test
 and package build on push/pull request and publishes the generated ZIP as a workflow
-artifact.
+artifact. The workflow also supports manual dispatch for an on-demand clean package build.
 
 ---
 
@@ -268,8 +285,7 @@ earlier state.
 ### CWE-78 — not required
 
 No shell or command interpreter is involved in the demonstrator. A CWE-78 weakness could
-exist downstream in some real system, but it is not required for embedded sub-option
-injection.
+exist downstream in some real system, but it is not required for embedded option injection.
 
 ---
 
@@ -279,7 +295,7 @@ The demonstrator uses `getsubopt()` because it makes the second-stage grammar vi
 compact. It does **not** claim that `getsubopt()` is itself vulnerable or that the function
 mandates a last-wins policy.
 
-`getsubopt()` returns sub-options sequentially. The demonstration application's assignment
+`getsubopt()` returns options sequentially. The demonstration application's assignment
 logic determines the final state when a key repeats. That distinction is intentional and
 should be preserved in the CWE submission wording.
 
@@ -314,3 +330,6 @@ The strongest form of the submission is intentionally conservative:
 
 This is a **CWE content-improvement request**, not a claim that delimiter injection or
 parameter pollution is a newly discovered attack category.
+
+Use [`SUBMISSION-CHECKLIST.md`](SUBMISSION-CHECKLIST.md) for the final pre-submit and
+post-receipt sequence.
