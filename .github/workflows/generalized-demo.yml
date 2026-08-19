@@ -19,5 +19,13 @@ jobs:
           cc --version
           python3 --version
 
+      - name: Verify committed PoC integrity manifest
+        run: |
+          cd submission
+          sha256sum -c evidence/sha256.txt
+
       - name: Run generalized demonstrator
         run: bash submission/scripts/run_demo.sh
+
+      - name: Build submission package
+        run: bash tools/make-submission.sh
