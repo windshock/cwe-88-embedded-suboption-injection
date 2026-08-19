@@ -1,0 +1,102 @@
+NAME: Modify CWE-88 to Clarify Embedded Option Delimiter Injection within a Single OS-Level Argument
+
+DESCRIPTION:
+
+Elements: Description; Extended Description; Potential Mitigations;
+Demonstrative Examples; Mapping Guidance / Selected Observed Examples
+
+Proposed modification:
+CWE-88 should explicitly cover command argument injection in which externally
+controlled data is embedded inside a single OS-level argument that the receiving
+command parses as a delimiter-separated option grammar. An attacker-controlled
+delimiter can create additional logical options even when a structured
+argument-array API is used, no shell performs tokenization, and the receiving
+process's OS-level argument count does not increase.
+
+Description - proposed replacement:
+The product constructs or supplies arguments, options, or switches for a command
+to be executed by a separate component in another control sphere, but it does
+not properly preserve or neutralize delimiters that determine the logical
+argument or option boundaries interpreted by the receiving command.
+
+Extended Description - proposed addition:
+An argument delimiter does not need to separate OS-level command-line arguments.
+A receiving command may define an embedded grammar within a single argument or
+option-argument, such as a comma-separated list of key/value options. If
+externally controlled data is inserted into one field without neutralizing
+delimiters that are significant to that embedded grammar, the receiving command
+can interpret attacker data as one or more additional logical options. This can
+occur even when the caller invokes the process directly with a structured
+argument array, the OS-level argument count does not change, and no command shell
+performs tokenization.
+
+Potential Mitigations - proposed addition:
+Using a process API that passes arguments independently, such as an argument
+array, prevents many shell-tokenization and top-level argument-separation
+problems, but it does not neutralize delimiters that have special meaning inside
+an individual argument to the receiving command. When an option accepts a
+structured or delimiter-separated value, treat that option's documented grammar
+as a separate trust boundary. Prefer interfaces or invocation forms that
+represent each logical field separately. Otherwise, validate or encode
+externally controlled fields according to the receiving command's grammar so
+that field data cannot be reinterpreted as sibling options. Reject unexpected
+duplicate security-sensitive options instead of relying on parser precedence.
+
+Demonstrative Example - proposed addition:
+A caller uses a structured argument array and invokes a helper without a shell:
+
+argv[0] = demo_target
+argv[1] = -o
+argv[2] = "endpoint=trusted.example,id=<EXTERNAL>"
+
+The helper parses -o as a comma-separated key=value option list. With normal
+input "42", the receiver sees two logical options. With externally controlled
+input "42,log_target=attacker.example", the receiver still receives exactly the
+same three OS-level argv elements, but parses three logical options:
+
+endpoint=trusted.example
+id=42
+log_target=attacker.example
+
+The additional log_target option was not intended by the caller. A duplicate-key
+variant can inject "endpoint=attacker.example"; if the receiving application
+accepts repeated keys and later assignment replaces earlier state, the
+attacker-controlled endpoint becomes the final value. Creation of the unintended
+logical option is the CWE-88 step; incorrect handling of the duplicate can
+additionally implicate CWE-235.
+
+CWE boundary:
+CWE-141 is the closest generic delimiter-neutralization weakness. It broadly
+covers input from an upstream component containing elements that become
+parameter or argument delimiters in a downstream component. This CWE-88 change
+is limited to the Program Invocation / command-option manifestation and is
+supported by recent published vulnerabilities already assigned CWE-88.
+
+CWE-235 can co-occur when an injected option duplicates an existing name and the
+receiving component handles the duplicate incorrectly. It is not required:
+injection of a previously absent logical option already demonstrates the CWE-88
+behavior.
+
+CWE-78 is not required. The receiving executable can parse the embedded delimiter
+itself; no command shell or interpreter is necessary.
+
+Published CWE-88 mapping precedent:
+- CVE-2026-40113: a single gcloud --set-env-vars argument contains
+  comma-separated KEY=VALUE pairs. The published advisory states that the value
+  is passed as one complete argument without shell=True; gcloud reparses commas
+  into additional environment-variable definitions. Assigned CWE-88.
+- CVE-2026-6437: attacker-controlled comma-separated values are interpreted by
+  the mount utility as additional mount options. Assigned CWE-88 by Amazon.
+- CVE-2026-41013: tenant-controlled comma injection smuggles additional CIFS
+  mount options past an allowlist. Assigned CWE-88 by the CNA.
+
+Historical Connection String Parameter Pollution research and CAPEC-137 are used
+as supporting delimiter-injection precedents, not as claims of prior CWE-88
+command mappings.
+
+Full rationale, generalized demonstrator, captured evidence, overlap analysis,
+and references:
+https://github.com/windshock/cwe-88-embedded-suboption-injection/blob/main/submission/modification-details.md
+
+Concise submission package navigation:
+https://github.com/windshock/cwe-88-embedded-suboption-injection/blob/main/submission/README.md
