@@ -22,6 +22,8 @@ The main documents are:
 - [`form-description.txt`](form-description.txt) — plain-text copy/paste form content;
 - [`modification-details.md`](modification-details.md) — field-by-field rationale and
   proposed CWE content;
+- [`MAPPING-NOTES-PROPOSAL.md`](MAPPING-NOTES-PROPOSAL.md) — conservative fallback wording
+  if the CWE Team prefers to keep the current CWE-88 Description unchanged;
 - [`PRECEDENTS.md`](PRECEDENTS.md) — published CVE, CAPEC, historical, and standards
   precedents;
 - [`REVIEWER-NOTES.md`](REVIEWER-NOTES.md) — likely overlap/reviewer objections and proposed
@@ -207,6 +209,7 @@ submission/
 ├── FORM-TEXT.md
 ├── form-description.txt
 ├── modification-details.md
+├── MAPPING-NOTES-PROPOSAL.md
 ├── PRECEDENTS.md
 ├── REVIEWER-NOTES.md
 ├── SUBMISSION-CHECKLIST.md
@@ -273,6 +276,9 @@ slightly generalized to cover the receiving command's logical option grammar, or
 entry should at minimum contain a mapping/boundary note explaining when the single-argument
 case belongs to CWE-88 versus CWE-141.
 
+The ready-to-use conservative version of that fallback is in
+[`MAPPING-NOTES-PROPOSAL.md`](MAPPING-NOTES-PROPOSAL.md).
+
 ### CWE-235 — optional duplicate-handling step
 
 The `inject-new` case contains no duplicate key and already proves the CWE-88 behavior.
@@ -330,6 +336,11 @@ The strongest form of the submission is intentionally conservative:
 
 This is a **CWE content-improvement request**, not a claim that delimiter injection or
 parameter pollution is a newly discovered attack category.
+
+If the CWE Team is reluctant to change the top-level Description, the fallback request is
+still useful: retain the current Description and add Extended Description / Mapping Notes
+text that explicitly captures the second-stage command-option grammar and its boundary with
+CWE-141.
 
 Use [`SUBMISSION-CHECKLIST.md`](SUBMISSION-CHECKLIST.md) for the final pre-submit and
 post-receipt sequence.
