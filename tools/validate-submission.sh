@@ -41,8 +41,14 @@ for pattern in '*.exe' '*.dll' '*.so' '*.dylib' '*.o' '*.obj' '*.class' '*.jar';
     [ -z "$found" ] || fail "compiled artifact found in canonical submission set: $found"
 done
 
-# The locally built Linux demo target has no extension, so check it explicitly.
-[ ! -f "$SUBMISSION/poc/demo_target" ] || fail "locally built poc/demo_target must not be committed or packaged"
+# run_demo.sh intentionally creates poc/demo_target as a local build artifact.
+# Its existence is therefore allowed, but it must never be tracked by git or
+# copied into the submission ZIP.
+if command -v git >/dev/null 2>&1 && \
+   git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1 && \
+   git -C "$ROOT" ls-files --error-unmatch submission/poc/demo_target >/dev/null 2>&1; then
+    fail "compiled poc/demo_target is tracked by git"
+fi
 
 # Verify that the committed core source/scripts still match the captured manifest.
 (
@@ -52,6 +58,7 @@ done
 
 echo "[PASS] required submission files present"
 echo "[PASS] no restricted product-specific identifiers found"
-echo "[PASS] no compiled artifacts found in canonical submission material"
+echo "[PASS] no prohibited compiled artifacts found"
+echo "[PASS] local demo binary is not tracked"
 echo "[PASS] core demonstrator integrity manifest verified"
 echo "[PASS] submission hygiene validation passed"
