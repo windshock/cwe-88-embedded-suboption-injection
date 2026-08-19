@@ -1,0 +1,23 @@
+name: generalized-cwe88-demo
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: |
+          cc --version
+          python3 --version
+
+      - name: Run generalized demonstrator
+        run: bash submission/scripts/run_demo.sh
