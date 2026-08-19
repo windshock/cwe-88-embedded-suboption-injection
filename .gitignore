@@ -1,0 +1,12 @@
+# Local build artifacts
+submission/poc/demo_target
+submission/poc/*.o
+
+# Generated evidence / packaging
+submission/evidence/generated/
+dist/
+*.zip
+
+# Python
+__pycache__/
+*.pyc
