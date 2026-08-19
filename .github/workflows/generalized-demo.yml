@@ -3,6 +3,7 @@ name: generalized-cwe88-demo
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
