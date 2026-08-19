@@ -4,6 +4,17 @@ This checklist is modeled on the workflow observed for the prior CWE-69 modifica
 submission: the external form submission is assigned an `ES...` communication ID and then
 surfaced as an issue in the CWE Content Development Repository for tracking.
 
+The current official CWE contribution guidance says that a **modification to an existing
+weakness** has three required elements:
+
+1. submitter contact information;
+2. the relevant CWE-ID; and
+3. details of the suggested modification.
+
+This repository intentionally provides substantially more supporting material than the
+minimum so that the requested modification, evidence, precedents, and overlap boundaries are
+independently reviewable.
+
 ## Before submitting
 
 - [ ] Re-read current CWE-88, CWE-141, and CWE-235 pages and confirm no newer CWE release has
@@ -28,13 +39,14 @@ bash submission/scripts/run_demo.sh
 bash submission/scripts/capture_evidence.sh
 ```
 
-- [ ] Verify the committed integrity manifest:
+- [ ] Run the generalized-submission hygiene validator:
 
 ```sh
-cd submission
-sha256sum -c evidence/sha256.txt
-cd ..
+bash tools/validate-submission.sh
 ```
+
+It should confirm the required files, source integrity manifest, product-independent boundary,
+and absence of prohibited compiled artifacts.
 
 - [ ] Build the submission package:
 
@@ -49,12 +61,12 @@ dist/cwe-88-embedded-suboption-injection-submission.zip
 dist/cwe-88-embedded-suboption-injection-submission.zip.sha256
 ```
 
-- [ ] Open `submission/FORM-TEXT.md` and use it as the concise source for the CWE submission
-      form.
+- [ ] Open `submission/FORM-TEXT.md` as the canonical concise wording, or use
+      `submission/form-description.txt` for direct plain-text copy/paste.
 - [ ] Keep the action as **Modification**, not New CWE.
-- [ ] Identify **CWE-88** as the affected CWE.
-- [ ] Include the public GitHub repository as the full rationale / generalized evidence
-      reference.
+- [ ] Identify **CWE-88** as the relevant/affected CWE.
+- [ ] Provide the suggested modification details from the form text and include the public
+      GitHub repository as the full rationale / generalized evidence reference.
 
 ## Recommended submission framing
 
@@ -123,3 +135,8 @@ Prioritize the following materials:
 If reviewers challenge CWE-88 versus CWE-141, lead with the **current CWE-88 Program
 Invocation scope and the direct CNA mappings of CVE-2026-40113 / CVE-2026-6437 /
 CVE-2026-41013**, then acknowledge that CWE-141 is the broader generic delimiter weakness.
+
+## Official process reference
+
+- CWE Content Submission overview:
+  https://cwe.mitre.org/community/submissions/overview.html
