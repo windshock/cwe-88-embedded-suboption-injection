@@ -89,8 +89,7 @@ and treats `trusted.example` / `attacker.example` only as inert documentation st
 
 ## Published precedent
 
-This is not merely a theoretical interpretation. Published vulnerabilities already mapped
-to **CWE-88** show the same broad shape:
+Published vulnerabilities already mapped to **CWE-88** show the same broad shape:
 
 - **CVE-2026-40113 (PraisonAI):** a Python subprocess argument passed as one complete
   `--set-env-vars` value is later split by `gcloud` on commas, creating additional
@@ -135,6 +134,12 @@ The longer field-by-field rationale is in
 [`submission/modification-details.md`](submission/modification-details.md), and the most
 likely reviewer objections are stress-tested in
 [`submission/REVIEWER-NOTES.md`](submission/REVIEWER-NOTES.md).
+
+If the CWE Team prefers to keep CWE-88's current Description narrowly string-focused, the
+repository also includes a conservative ready-to-use fallback in
+[`submission/MAPPING-NOTES-PROPOSAL.md`](submission/MAPPING-NOTES-PROPOSAL.md). That fallback
+keeps the current weakness identity and asks only for explicit mapping/boundary guidance for
+the single-`argv`, second-stage command-option case.
 
 ## CWE boundary in one diagram
 
@@ -208,6 +213,7 @@ inside the canonical generalized submission material.
     ├── FORM-TEXT.md
     ├── form-description.txt
     ├── modification-details.md
+    ├── MAPPING-NOTES-PROPOSAL.md
     ├── PRECEDENTS.md
     ├── REVIEWER-NOTES.md
     ├── SUBMISSION-CHECKLIST.md
